@@ -1,6 +1,6 @@
 require 'rbconfig'
 require 'yaml'
-inventory = YAML.load_file("my_inventory.yml")
+inventory = YAML.load_file("inventory.yml")
 
 
 Vagrant.configure("2") do |config|
@@ -53,7 +53,7 @@ Vagrant.configure("2") do |config|
       ansible.verbose        = true
       ansible.install        = true
       ansible.limit          = "all"
-      ansible.inventory_path = "my_inventory.yml"
+      ansible.inventory_path = "inventory.yml"
     end
   end
 

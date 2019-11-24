@@ -6,4 +6,4 @@
   connection: ssh
   gather_facts: yes
   roles:
-  - cassandra-cluster
+   - cassandra-cluster
