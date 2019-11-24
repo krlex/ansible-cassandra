@@ -1,7 +1,7 @@
 ---
 - hosts: opscenter
   user: vagrant
-  become: True
+  become: yes
   tasks:
   - name: updating machine
     apt: update_cache=yes
@@ -9,8 +9,8 @@
   - name: installing some dependencies
     apt: pkg={{ item }} state=installed update-cache=yes
     with_items:
-      - libssl0.9.8
-      - python-software-properties
+      - libssl1.1
+      - software-properties-common
 
   - name: adding repo
     shell: echo "deb http://debian.datastax.com/community stable main" | sudo tee -a /etc/apt/sources.list.d/datastax.community.list
