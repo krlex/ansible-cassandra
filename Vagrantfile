@@ -1,29 +1,60 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
+require 'rbconfig'
+require 'yaml'
+inventory = YAML.load_file("my_inventory.yml")
+
 
 Vagrant.configure("2") do |config|
-N = 3
-(1..N).each do |machine_id|
-  config.vm.box = "debian/buster64"
-  config.vm.define "node#{machine_id}" do |machine|
-    machine.vm.hostname = "node#{machine_id}"
-    machine.vm.network "private_network", ip: "192.168.56.#{10+machine_id}"
-    if machine_id == N
-      machine.vm.provision :ansible do |ansible|
-        ansible.limit = "all"
-        ansible.playbook = "site.yml"
-       config.vm.provider "virtualbox" do |vb|
-         vb.customize ["modifyvm", :id, "--memory", "512"]
-       end
-      end
+
+  config.vm.box = "ubuntu/trusty64"
+
+  config.vm.synced_folder ".", "/vagrant", mount_options: ["dmode=775,fmode=600"]
+
+  config.vm.define "node1" do |machine|
+    machine.vm.network "private_network", ip: inventory["all"]["hosts"]["node1"]["ansible_ssh_host"]
+	machine.vm.provider "virtualbox" do |vbox|
+		vbox.memory = "1024"
+		vbox.cpus = "1"
+		vbox.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+		vbox.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+	end
+  end
+
+  config.vm.define "node2" do |machine|
+    machine.vm.network "private_network", ip: inventory["all"]["hosts"]["node2"]["ansible_ssh_host"]
+	machine.vm.provider "virtualbox" do |vbox|
+		vbox.memory = "1024"
+		vbox.cpus = "1"
+		vbox.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+		vbox.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+	end
+  end
+
+  config.vm.define "node3" do |machine|
+    machine.vm.network "private_network", ip: inventory["all"]["hosts"]["node3"]["ansible_ssh_host"]
+	machine.vm.provider "virtualbox" do |vbox|
+		vbox.memory = "1024"
+		vbox.cpus = "1"
+		vbox.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+		vbox.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+	end
+  end
+
+  config.vm.define 'controller' do |machine|
+    machine.vm.network "private_network", ip: inventory["all"]["hosts"]["controller"]["ansible_ssh_host"]
+	machine.vm.provider "virtualbox" do |vbox|
+		vbox.memory = "1024"
+		vbox.cpus = "1"
+		vbox.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+		vbox.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+	end
+
+    machine.vm.provision :ansible_local do |ansible|
+      ansible.playbook       = "CassandraCluster.yml"
+      ansible.verbose        = true
+      ansible.install        = true
+      ansible.limit          = "all"
+      ansible.inventory_path = "my_inventory.yml"
     end
   end
-end
-  config.vm.define "opscenter" do |opscenter|
-    opscenter.vm.box = "debian/buster64"
-    opscenter.vm.network  "private_network", ip: "192.168.56.14"
-  config.vm.provision "ansible" do |ansible|
-   ansible.playbook = "tasks/opscenter.yml"
- end
- end
+
 end
